@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登録画面</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <header>
+        <h1>データ登録</h1>
+    </header>
+    <main>
+        <form action="/register" method="post">
+            <label for="folder_path">フォルダパス:</label>
+            <input type="text" id="folder_path" name="folder_path" placeholder="フォルダパスを入力してください">
+            <button type="submit">登録</button>
+        </form>
+        <section id="data">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>内容</th>
+                        <th>ファイル名</th>
+                        <th>リンク</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in data %}
+                        <tr>
+                            <td>{{ row[0] }}</td>
+                            <td>{{ row[1] }}</td>
+                            <td>{{ row[2] }}</td>
+                            <td><a href="{{ row[3] }}" target="_blank">リンク</a></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+        <button onclick="window.location.href='/'">検索画面へ</button>
+    </main>
+</body>
+</html>

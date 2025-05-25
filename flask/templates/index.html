@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>検索画面</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <header>
+        <h1>ファイル検索</h1>
+    </header>
+    <main>
+        <form action="/" method="post">
+            <label for="keyword">キーワード:</label>
+            <input type="text" id="keyword" name="keyword" placeholder="キーワードを入力してください">
+            <button type="submit">検索</button>
+        </form>
+        <section id="results">
+            {% if results %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>ファイル名</th>
+                        <th>内容</th>
+                        <th>リンク</th>
+                        <th>カテゴリ</th> <!-- カテゴリ列追加 -->
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for result in results %}
+                    <tr>
+                        <td>{{ result[0] }}</td>
+                        <td>{{ result[1][:50] }}...</td> <!-- 内容省略表示 -->
+                        <td><a href="{{ result[2] }}">リンク</a></td>
+                        <td>{{ result[3] }}</td> <!-- カテゴリ表示 -->
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p>検索結果はありませんでした。</p>
+            {% endif %}
+        </section>
+        <button onclick="window.location.href='/register'">登録画面へ</button>
+    </main>
+</body>
+</html>
