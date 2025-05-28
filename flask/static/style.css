@@ -66,3 +66,30 @@ table th, table td {
 table th {
     background-color: #f4f4f4;
 }
+select {
+    width: 80%;
+    padding: 10px;
+    margin: 0px 0;
+    background-color: #e3e3e7; /* 青系の背景色 */
+    color: rgb(5, 5, 5); /* 白文字 */
+    border: 1px solid #ccc;
+    border-radius: 4px; /* 角を丸くする */
+    font-size: 16px; /* フォントサイズを大きくする */
+    cursor: pointer; /* カーソルをポインターにする */
+    /*box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* 軽い影を追加 */
+}
+
+select:hover {
+    background-color: #e3e3e7;/* ホバー時の色変更 */
+    border: 1px solid #ccc;
+}
+
+select:focus {
+    outline: none; /* フォーカス時のアウトラインを消す */
+    border: 1px solid #ccc;
+}
+
+option {
+    background-color: white; /* オプションの背景色 */
+    color: rgb(218, 19, 19); /* オプションの文字色 */
+}

@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>登録画面</title>
     <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
 </head>
 <body>
     <header>
@@ -17,13 +20,33 @@
             <button type="submit">登録</button>
         </form>
         <section id="data">
-            <table>
+            <table id="data-table">
                 <thead>
                     <tr>
                         <th>ID</th>
                         <th>内容</th>
                         <th>ファイル名</th>
                         <th>リンク</th>
+                    </tr>
+                    <tr>
+                        <th></th>
+                        <th>
+                            <select id="contents-filter">
+                                <option value="">すべて</option>
+                                <option value="Data AAA BBB">Data AAA BBB</option>
+                                <option value="Data CCC DDD">Data CCC DDD</option>
+                                <option value="内容3">内容3</option>
+                            </select>
+                        </th>
+                        <th>
+                            <select id="filename-filter">
+                                <option value="">すべて</option>
+                                <option value="ファイル1.xlsx">ファイル1.xlsx</option>
+                                <option value="ファイル2.xlsx">ファイル2.xlsx</option>
+                                <option value="ファイル3.xlsx">ファイル3.xlsx</option>
+                            </select>
+                        </th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -40,5 +63,26 @@
         </section>
         <button onclick="window.location.href='/'">検索画面へ</button>
     </main>
+    <script>
+        $(document).ready(function() {
+            const table = $('#data-table').DataTable({
+                language: {
+                    url: "https://cdn.datatables.net/plug-ins/1.13.4/i18n/ja.json"
+                }
+            });
+
+            // 「内容」列のフィルター適用
+            $('#contents-filter').on('change', function() {
+                const val = $.fn.dataTable.util.escapeRegex($(this).val());
+                table.column(1).search(val ? `^${val}$` : '', true, false).draw();
+            });
+
+            // 「ファイル名」列のフィルター適用
+            $('#filename-filter').on('change', function() {
+                const val = $.fn.dataTable.util.escapeRegex($(this).val());
+                table.column(2).search(val ? `^${val}$` : '', true, false).draw();
+            });
+        });
+    </script>
 </body>
 </html>
