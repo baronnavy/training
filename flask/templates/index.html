@@ -31,9 +31,9 @@
                     {% for result in results %}
                     <tr>
                         <td>{{ result[0] }}</td>
-                        <td>{{ result[1][:50] }}...</td> <!-- 内容省略表示 -->
+                        <td>{{ result[1]|safe }}</td> <!-- HTMLの安全な表示 -->
                         <td><a href="{{ result[2] }}">リンク</a></td>
-                        <td>{{ result[3] }}</td> <!-- カテゴリ表示 -->
+                        <td>{{ result[3] }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>

@@ -1,7 +1,10 @@
 from flask import Flask, render_template, request, redirect
+from markupsafe import Markup
 import pandas as pd
 import psycopg2
 import os
+import csv
+import re
 
 app = Flask(__name__)
 
@@ -10,6 +13,18 @@ DB_HOST = "localhost"
 DB_NAME = "flask"
 DB_USER = "postgres"
 DB_PASSWORD = "postgres"
+
+# 類似語辞書の読み込み
+def load_synonyms_dict(file_path):
+    # CSVをDataFrameとして読み込み
+    df = pd.read_csv(file_path, encoding='utf-8')
+    # DataFrameを辞書形式に変換
+    synonyms_dict = df.groupby('keyword')['synonym'].apply(list).to_dict()
+
+    print(synonyms_dict)  # 作成された辞書を出力
+    return synonyms_dict
+
+synonyms_dict = load_synonyms_dict('synonyms.csv')
 
 # データベースセットアップ
 def setup_database():
@@ -39,9 +54,13 @@ def setup_database():
 def index():
     if request.method == 'POST':
         keyword = request.form['keyword']
+        related_words = [keyword] + synonyms_dict.get(keyword, [])
         conn = psycopg2.connect(host=DB_HOST, dbname=DB_NAME, user=DB_USER, password=DB_PASSWORD)
         cursor = conn.cursor()
-        cursor.execute("""
+
+        # 動的にSQLクエリを構築
+        query_conditions = " OR ".join([f"document_search.contents LIKE '%{word}%' OR document_search.filename LIKE '%{word}%'" for word in related_words])
+        query = f"""
         SELECT 
             document_search.filename, 
             document_search.contents, 
@@ -54,12 +73,21 @@ def index():
         ON 
             document_search.filename = master.filename
         WHERE 
-            document_search.contents LIKE %s OR document_search.filename LIKE %s
-        """, ('%' + keyword + '%', '%' + keyword + '%'))
+            {query_conditions};
+        """
+        print("生成されたクエリ:", query)
+        cursor.execute(query)
         results = cursor.fetchall()
         conn.close()
-        return render_template('index.html', results=results)
-    return render_template('index.html')
+
+        # ハイライト処理
+        highlighted_results = []
+        for result in results:
+            highlighted_content = re.sub(f'({"|".join(map(re.escape, related_words))})', r'<mark>\1</mark>', result[1], flags=re.IGNORECASE)
+            highlighted_results.append((result[0], Markup(highlighted_content), result[2], result[3]))
+        
+        return render_template('index.html', results=highlighted_results, keyword=keyword)
+    return render_template('index.html', results=None)
 
 # 登録画面
 @app.route('/register', methods=['GET', 'POST'])
@@ -88,7 +116,6 @@ def register():
     data = cursor.fetchall()
     conn.close()
     return render_template('register.html', data=data)
-
 
 # アプリケーション起動
 if __name__ == "__main__":

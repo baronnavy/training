@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>検索画面</title>
+    <link rel="stylesheet" href="/static/style.css">
+
+</head>
+<body>
+    <h1>検索画面</h1>
+    <table>
+        <tr>
+            <th></th>
+            {% for model in table['speed'] %}
+            <th>{{ model['model'] }}</th>
+            {% endfor %}
+        </tr>
+        {% for row_name, row_values in table.items() %}
+        <tr>
+            <th>{{ row_name }}</th>
+            {% for cell in row_values %}
+            <td style="{{ cell['style'] }}">{{ cell['value'] }}</td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </table>
+    <button onclick="location.href='/register'">登録画面へ</button>
+</body>
+</html>
