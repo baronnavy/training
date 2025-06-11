@@ -1,30 +1,126 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="en">
 <head>
-    <link rel="stylesheet" href="/static/style.css">
-    <title>登録画面</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DataTables with Synchronizable Drag-and-Drop</title>
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <!-- jQuery UI -->
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+    <style>
+        table {
+            width: 100%;
+        }
+        th {
+            cursor: move;
+            background-color: #f4f4f4;
+        }
+        td {
+            text-align: center;
+        }
+    </style>
 </head>
 <body>
-    <h1>登録画面</h1>
-    <form method="POST">
-        <label for="file_path">CSVファイルのパス:</label>
-        <input type="text" name="file_path" id="file_path" required>
-        <button type="submit">登録</button>
-    </form>
-    <table>
-        <tr>
-            <th>Model</th>
-            <th>Speed</th>
-            <th>Price</th>
-        </tr>
-        {% for item in spec %}
-        <tr>
-            <th>{{ item['model'] }}</th> <!-- モデル名を横軸として使用 -->
-            <td>{{ item['speed'] }}</td>
-            <td>{{ item['price'] }}</td>
-        </tr>
-        {% endfor %}
+    <h1>DataTables with Drag-and-Drop Functionality</h1>
+    <table id="example" class="display">
+        <thead>
+            <tr id="sortableHeader">
+                <th data-index="0">Model</th>
+                <th data-index="1">Speed</th>
+                <th data-index="2">Price</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Model A</td>
+                <td>200 km/h</td>
+                <td>$20,000</td>
+            </tr>
+            <tr>
+                <td>Model B</td>
+                <td>180 km/h</td>
+                <td>$18,000</td>
+            </tr>
+            <tr>
+                <td>Model C</td>
+                <td>220 km/h</td>
+                <td>$25,000</td>
+            </tr>
+        </tbody>
     </table>
-    <button onclick="location.href='/'">検索画面へ</button>
+
+    <script>
+        $(document).ready(function () {
+            // Initialize DataTable
+            var table = $('#example').DataTable({
+                paging: false,
+                searching: false,
+                dom: 't',
+                ordering: false // Disable default ordering
+            });
+
+            // Enable column drag-and-drop
+            $("#sortableHeader").sortable({
+                axis: "x",
+                cursor: "move",
+                stop: function (event, ui) {
+                    var columnOrder = [];
+
+                    // Capture new column order
+                    $("#sortableHeader th").each(function () {
+                        columnOrder.push($(this).attr("data-index"));
+                    });
+
+                    // Rearrange DataTable internal data structure
+                    var newData = [];
+                    table.rows().data().each(function (row) {
+                        var rearrangedRow = columnOrder.map(function (index) {
+                            return row[index];
+                        });
+                        newData.push(rearrangedRow);
+                    });
+
+                    // Clear and redraw the table with reordered columns
+                    table.clear().rows.add(newData).draw();
+
+                    // Update header indices to reflect new order
+                    $("#sortableHeader th").each(function (newIndex) {
+                        $(this).attr("data-index", newIndex);
+                    });
+
+                    console.log("Columns successfully reordered!");
+                }
+            });
+
+            // Enable row drag-and-drop
+            $("#example tbody").sortable({
+                items: "tr",
+                cursor: "move",
+                stop: function (event, ui) {
+                    var reorderedData = [];
+
+                    // Get updated row order and extract data
+                    $("#example tbody tr").each(function () {
+                        var rowData = [];
+                        $(this).find("td").each(function () {
+                            rowData.push($(this).text());
+                        });
+                        reorderedData.push(rowData);
+                    });
+
+                    // Clear and reload the table with reordered rows
+                    table.clear().rows.add(reorderedData).draw();
+
+                    console.log("Rows successfully reordered!");
+                }
+            }).disableSelection();
+        });
+    </script>
 </body>
 </html>

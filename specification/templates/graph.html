@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>散布図作成</title>
+    <script src="https://cdn.plot.ly/plotly-2.25.1.min.js"></script>
+</head>
+<body>
+    <h1>散布図作成</h1>
+    <form action="/graph" method="post">
+        <label for="x_axis">横軸:</label>
+        <select name="x_axis" id="x_axis">
+            <option value="speed">Speed</option>
+            <option value="price">Price</option>
+        </select>
+        <label for="y_axis">縦軸:</label>
+        <select name="y_axis" id="y_axis">
+            <option value="speed">Speed</option>
+            <option value="price">Price</option>
+        </select>
+        <button type="submit">グラフ生成</button>
+    </form>
+
+    <div id="scatter-plot"></div>
+    <button onclick="location.href='/'">戻る</button>
+
+    <script>
+        const graphJson = "{\"data\": [{\"x\": [10, 20, 30, 15], \"y\": [300, 200, 100, 200], \"type\": \"scatter\", \"mode\": \"markers\"}], \"layout\": {\"title\": \"Speed vs Price\", \"xaxis\": {\"title\": \"Speed\"}, \"yaxis\": {\"title\": \"Price\"}}}";
+        if (graphJson && graphJson !== 'None') {
+            const figure = JSON.parse(graphJson);
+            Plotly.newPlot('scatter-plot', figure);
+        } else {
+            console.log("No graph data available.");
+        }
+
+
+
+    </script>
+</body>
+</html>

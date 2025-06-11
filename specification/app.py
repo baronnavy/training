@@ -1,6 +1,14 @@
 from flask import Flask, render_template, request, redirect
 import sqlite3
 import pandas as pd
+import matplotlib.pyplot as plt
+from io import BytesIO
+import base64
+import json
+import matplotlib
+import plotly
+
+matplotlib.use('Agg')  # GUI非依存のバックエンドに設定
 
 app = Flask(__name__)
 
@@ -24,38 +32,50 @@ def get_db_connection():
     connection.row_factory = sqlite3.Row
     return connection
 
+@app.route('/graph', methods=['GET', 'POST'])
+def graph():
+    graph_json = None  # 初期値を設定
+
+    if request.method == 'POST':
+        connection = get_db_connection()
+        rows = connection.execute('SELECT model, speed, price FROM spec').fetchall()
+        connection.close()
+
+        df = pd.DataFrame(rows, columns=["model", "speed", "price"])
+        x_axis = request.form['x_axis']
+        y_axis = request.form['y_axis']
+
+        # 散布図生成
+        graph_figure = {
+            'data': [{
+                'x': df[x_axis].tolist(),
+                'y': df[y_axis].tolist(),
+                'type': 'scatter',
+                'mode': 'markers'
+            }],
+            'layout': {
+                'title': f'{x_axis.capitalize()} vs {y_axis.capitalize()}',
+                'xaxis': {'title': x_axis.capitalize()},
+                'yaxis': {'title': y_axis.capitalize()}
+            }
+        }
+        graph_json = json.dumps(graph_figure)  # graph_jsonを更新
+
+    return render_template('graph.html', graph_json=graph_json)
+
+
+    
+
 @app.route('/')
 def index():
     connection = get_db_connection()
     rows = connection.execute('SELECT model, speed, price FROM spec').fetchall()
     connection.close()
 
-    # pandasでデータフレーム化
     df = pd.DataFrame(rows, columns=["model", "speed", "price"])
+    df_pivot = df.set_index("model").T.to_dict()
 
-    # ピボット処理
-    df_pivot = df.set_index("model").T
-
-    # AAAモデルの基準値を取得
-    base_model = df[df['model'] == 'AAA']
-    base_speed = base_model['speed'].values[0]
-    base_price = base_model['price'].values[0]
-
-    # スタイル付け関数
-    def highlight_cells(val, base):
-        if isinstance(val, (int, float)):  # 数値であることを確認
-            return 'background-color: blue; color: white;' if val > base else 'background-color: red; color: white;'
-        return ''  # 数値以外はスタイルなし
-
-    # テーブルに色付けを適用
-    styled_table = {}
-    for row_name, row_values in df_pivot.iterrows():
-        styled_table[row_name] = []
-        for col_name, col_value in zip(df_pivot.columns, row_values):
-            style = highlight_cells(col_value, base_speed if row_name == 'speed' else base_price)
-            styled_table[row_name].append({'model': col_name, 'value': col_value, 'style': style})
-
-    return render_template('index.html', table=styled_table)
+    return render_template('index.html', table=df_pivot)
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
