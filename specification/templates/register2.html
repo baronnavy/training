@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>Spec2 登録画面</title>
+</head>
+<body>
+    <h1>Spec2 登録画面</h1>
+
+    <!-- 登録フォーム -->
+    <form method="POST">
+        <label for="file_path">CSVファイルのパス:</label>
+        <input type="text" id="file_path" name="file_path" required>
+        <button type="submit">登録</button>
+    </form>
+    <button onclick="location.href='/'">戻る</button>
+
+    <!-- 登録済みデータを表示 -->
+<h2>登録済みデータ</h2>
+{% if spec2 %}
+    <table border="1">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Model</th>
+                <th>Speed2</th>
+                <th>Price2</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in spec2 %}
+            <tr>
+                <td>{{ row['id'] }}</td>
+                <td>{{ row['model'] }}</td>
+                <td>{{ row['speed2'] }}</td>
+                <td>{{ row['price2'] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>現在、登録済みのデータがありません。</p>
+{% endif %}
+
+</body>
+</html>

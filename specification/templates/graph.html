@@ -2,39 +2,72 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>散布図作成</title>
+    <title>選択範囲が黒のリアルタイム更新パラレル座標プロット</title>
     <script src="https://cdn.plot.ly/plotly-2.25.1.min.js"></script>
 </head>
 <body>
-    <h1>散布図作成</h1>
-    <form action="/graph" method="post">
-        <label for="x_axis">横軸:</label>
-        <select name="x_axis" id="x_axis">
-            <option value="speed">Speed</option>
-            <option value="price">Price</option>
-        </select>
-        <label for="y_axis">縦軸:</label>
-        <select name="y_axis" id="y_axis">
-            <option value="speed">Speed</option>
-            <option value="price">Price</option>
-        </select>
-        <button type="submit">グラフ生成</button>
-    </form>
-
-    <div id="scatter-plot"></div>
-    <button onclick="location.href='/'">戻る</button>
+    <h1>リアルタイムで更新されるパラレル座標プロット</h1>
+    <div id="parallel-plot"></div>
+    <button onclick="resetFilters()">フィルターをリセット</button>
 
     <script>
-        const graphJson = "{\"data\": [{\"x\": [10, 20, 30, 15], \"y\": [300, 200, 100, 200], \"type\": \"scatter\", \"mode\": \"markers\"}], \"layout\": {\"title\": \"Speed vs Price\", \"xaxis\": {\"title\": \"Speed\"}, \"yaxis\": {\"title\": \"Price\"}}}";
-        if (graphJson && graphJson !== 'None') {
-            const figure = JSON.parse(graphJson);
-            Plotly.newPlot('scatter-plot', figure);
-        } else {
-            console.log("No graph data available.");
+        const sampleData = [
+            {速度: 80, 価格: 300, 燃費: 15, 距離: 100, カテゴリ: "A"},
+            {速度: 60, 価格: 200, 燃費: 20, 距離: 120, カテゴリ: "B"},
+            {速度: 100, 価格: 400, 燃費: 10, 距離: 80, カテゴリ: "A"},
+            {速度: 90, 価格: 350, 燃費: 12, 距離: 95, カテゴリ: "C"}
+        ];
+
+        let dimensions = [
+            { label: "速度", values: sampleData.map(row => row.速度), range: [0, 100], constraintrange: [0, 100] },
+            { label: "価格", values: sampleData.map(row => row.価格), range: [0, 500], constraintrange: [0, 500] },
+            { label: "燃費", values: sampleData.map(row => row.燃費), range: [0, 30], constraintrange: [0, 30] },
+            { label: "距離", values: sampleData.map(row => row.距離), range: [0, 150], constraintrange: [0, 150] }
+        ];
+
+        const layout = {
+            title: "リアルタイムで更新されるパラレル座標プロット"
+        };
+
+        function updatePlot() {
+            const filteredData = sampleData.filter(row =>
+                row.速度 >= dimensions[0].constraintrange[0] &&
+                row.速度 <= dimensions[0].constraintrange[1] &&
+                row.価格 >= dimensions[1].constraintrange[0] &&
+                row.価格 <= dimensions[1].constraintrange[1] &&
+                row.燃費 >= dimensions[2].constraintrange[0] &&
+                row.燃費 <= dimensions[2].constraintrange[1] &&
+                row.距離 >= dimensions[3].constraintrange[0] &&
+                row.距離 <= dimensions[3].constraintrange[1]
+            );
+
+            const plotData = [{
+                type: 'parcoords',
+                line: {
+                    color: filteredData.map(row => row.カテゴリ === "A" ? 1 : row.カテゴリ === "B" ? 2 : 3),
+                    colorscale: [
+                        [0, 'red'],
+                        [0.5, 'blue'],
+                        [1, 'green']
+                    ]
+                },
+                dimensions: dimensions.map(d => {
+                    const updatedValues = filteredData.map(row => row[d.label]);
+                    return { ...d, values: updatedValues, range: d.range, constraintrange: d.constraintrange };
+                }),
+                rangebackgroundcolor: "black"
+            }];
+
+            Plotly.react('parallel-plot', plotData, layout);
         }
 
+        function resetFilters() {
+            dimensions = dimensions.map(d => ({ ...d, constraintrange: d.range }));
+            updatePlot();
+        }
 
-
+        // 初期プロット
+        updatePlot();
     </script>
 </body>
 </html>
