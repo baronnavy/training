@@ -73,34 +73,49 @@ def index():
     connection.close()
 
     df = pd.DataFrame(rows, columns=["model", "speed", "price"])
-    df_pivot = df.set_index("model").T.to_dict()
+    model_list = df["model"].unique()
+    model_dict = df.set_index("model").T.to_dict()  # データを辞書形式に変換
 
-    return render_template('index.html', table=df_pivot)
+    print(df)  # モデルデータをデバッグ用に出力
+    return render_template('index.html', table=model_dict, models=model_list)
+
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    if request.method == 'POST':
-        file_path = request.form.get('file_path')
-        if file_path:
-            try:
-                df = pd.read_csv(file_path)
-                connection = get_db_connection()
-                for _, row in df.iterrows():
-                    connection.execute(
-                        'INSERT INTO spec (model, speed, price) VALUES (?, ?, ?)',
-                        (row['model'], row['speed'], row['price'])
-                    )
-                connection.commit()
-            except Exception as e:
-                print(f"エラー: {e}")
-            finally:
-                connection.close()
-        return redirect('/register')
-
     connection = get_db_connection()
-    rows = connection.execute('SELECT * FROM spec').fetchall()
-    connection.close()
-    return render_template('register.html', spec=rows)
+    try:
+        if request.method == 'POST':
+            file_path = request.form.get('file_path')
+            if file_path:
+                try:
+                    df = pd.read_csv(file_path)
+                    with connection:
+                        for _, row in df.iterrows():
+                            connection.execute(
+                                'INSERT INTO spec (model, speed, price) VALUES (?, ?, ?)',
+                                (row['model'], row['speed'], row['price'])
+                            )
+                except Exception as e:
+                    print(f"Error: {e}")
+            return redirect('/register')
+
+        # Fetch distinct models and table data
+        models = connection.execute('SELECT DISTINCT model FROM spec').fetchall()
+        rows = connection.execute('SELECT model, speed, price FROM spec').fetchall()
+
+        # Prepare data in a dictionary format
+        model_data = {row['model']: {'speed': row['speed'], 'price': row['price']} for row in rows}
+
+    finally:
+        connection.close()
+
+    return render_template(
+        'register.html',
+        models=[model[0] for model in models],
+        table=model_data
+    )
+
 
 if __name__ == '__main__':
     initialize_db()

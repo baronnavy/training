@@ -4,28 +4,122 @@
     <meta charset="UTF-8">
     <title>検索画面</title>
     <link rel="stylesheet" href="/static/style.css">
-
+    <style>
+        .model-select-container, .filter-container {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .model-select-container label, .filter-container label {
+            margin-right: 5px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+        }
+        th, td {
+            border: 1px solid #000;
+            text-align: center;
+            padding: 8px;
+        }
+    </style>
 </head>
 <body>
     <h1>検索画面</h1>
-    <table>
-        <tr>
-            <th></th>
-            {% for model in table['speed'] %}
-            <th>{{ model['model'] }}</th>
-            {% endfor %}
-        </tr>
-        {% for row_name, row_values in table.items() %}
-        <tr>
-            <th>{{ row_name }}</th>
-            {% for cell in row_values %}
-            <td style="{{ cell['style'] }}">{{ cell['value'] }}</td>
-            {% endfor %}
-        </tr>
-        {% endfor %}
+
+    <!-- モデル選択用のプルダウン -->
+    <div class="model-select-container">
+        <div>
+            <label for="model1">Model 1:</label>
+            <select id="model1" class="model-select">
+                <option value="">選択してください</option>
+                {% for model in models %}
+                <option value="{{ model }}">{{ model }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label for="model2">Model 2:</label>
+            <select id="model2" class="model-select">
+                <option value="">選択してください</option>
+                {% for model in models %}
+                <option value="{{ model }}">{{ model }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label for="model3">Model 3:</label>
+            <select id="model3" class="model-select">
+                <option value="">選択してください</option>
+                {% for model in models %}
+                <option value="{{ model }}">{{ model }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+    <!-- speedとpriceのフィルター -->
+    <div class="filter-container">
+        <div>
+            <input type="checkbox" id="filter-speed" class="filter-checkbox" checked>
+            <label for="filter-speed">Speed</label>
+        </div>
+        <div>
+            <input type="checkbox" id="filter-price" class="filter-checkbox" checked>
+            <label for="filter-price">Price</label>
+        </div>
+    </div>
+
+    <!-- 生成ボタン -->
+    <button id="generate-btn" type="button">生成</button>
+
+    <!-- テーブル -->
+    <table id="data-table">
+        <thead>
+            <tr>
+                <th>Model</th>
+                <th id="header-speed">Speed</th>
+                <th id="header-price">Price</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- 選択されたモデルのデータをここに表示 -->
+        </tbody>
     </table>
-    <button onclick="location.href='/register'">登録画面へ</button>
-    <button onclick="location.href='/graph'">グラフ</button>
-    
+
+    <script>
+        // Flaskから渡されたデータを使用
+        const modelData = {{ table|tojson }};
+
+        // 生成ボタンを押した時に選択されたモデルをテーブルに反映
+        document.getElementById('generate-btn').addEventListener('click', function () {
+            const selectedModels = [
+                document.getElementById('model1').value,
+                document.getElementById('model2').value,
+                document.getElementById('model3').value
+            ].filter(Boolean); // 選択されていない項目を除去
+
+            const tableBody = document.querySelector('#data-table tbody');
+            tableBody.innerHTML = ''; // テーブルをクリア
+
+            // 選択されたモデルを取得してテーブルに表示
+            selectedModels.forEach(model => {
+                if (modelData[model]) {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${model}</td>
+                        ${document.getElementById('filter-speed').checked ? `<td>${modelData[model].speed} km/h</td>` : ''}
+                        ${document.getElementById('filter-price').checked ? `<td>$${modelData[model].price.toLocaleString()}</td>` : ''}
+                    `;
+                    tableBody.appendChild(row);
+                }
+            });
+
+            // ヘッダーを動的に表示/非表示
+            document.getElementById('header-speed').style.display = document.getElementById('filter-speed').checked ? 'table-cell' : 'none';
+            document.getElementById('header-price').style.display = document.getElementById('filter-price').checked ? 'table-cell' : 'none';
+        });
+    </script>
 </body>
 </html>

@@ -1,123 +1,172 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DataTables with Synchronizable Drag-and-Drop</title>
-    <!-- DataTables CSS -->
+    <title>スペック表生成</title>
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
-    <!-- jQuery -->
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <!-- DataTables JS -->
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
-    <!-- jQuery UI -->
-    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
-    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
     <style>
         table {
             width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+        }
+        th, td {
+            border: 1px solid #000;
+            text-align: center;
+            padding: 8px;
         }
         th {
-            cursor: move;
             background-color: #f4f4f4;
         }
-        td {
-            text-align: center;
+        .container {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .selection-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
     </style>
 </head>
 <body>
-    <h1>DataTables with Drag-and-Drop Functionality</h1>
+    <h1>スペック表生成</h1>
+
+    <div class="container">
+        <div class="selection-container">
+            <label>表示項目:</label>
+            <label>
+                <input type="checkbox" id="filter-speed" class="filter-checkbox" checked>
+                Speed
+            </label>
+            <label>
+                <input type="checkbox" id="filter-price" class="filter-checkbox" checked>
+                Price
+            </label>
+        </div>
+
+        <div class="selection-container">
+            <label for="model1">モデル選択:</label>
+            <select id="model1" class="model-select">
+                <option value="">選択してください</option>
+                {% for model in models %}
+                <option value="{{ model }}">{{ model }}</option>
+                {% endfor %}
+            </select>
+
+            <select id="model2" class="model-select">
+                <option value="">選択してください</option>
+                {% for model in models %}
+                <option value="{{ model }}">{{ model }}</option>
+                {% endfor %}
+            </select>
+
+            <select id="model3" class="model-select">
+                <option value="">選択してください</option>
+                {% for model in models %}
+                <option value="{{ model }}">{{ model }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+    <button id="generate-btn" type="button">生成</button>
+
     <table id="example" class="display">
         <thead>
-            <tr id="sortableHeader">
-                <th data-index="0">Model</th>
-                <th data-index="1">Speed</th>
-                <th data-index="2">Price</th>
+            <tr id="header-row">
+                <th>項目</th>
+            </tr>
+            <tr id="model-row">
+                <th></th>
             </tr>
         </thead>
         <tbody>
-            <tr>
-                <td>Model A</td>
-                <td>200 km/h</td>
-                <td>$20,000</td>
-            </tr>
-            <tr>
-                <td>Model B</td>
-                <td>180 km/h</td>
-                <td>$18,000</td>
-            </tr>
-            <tr>
-                <td>Model C</td>
-                <td>220 km/h</td>
-                <td>$25,000</td>
-            </tr>
         </tbody>
     </table>
 
     <script>
+        // Flaskから渡されるモデルデータ
+        const modelData = {{ table|tojson }};
+
         $(document).ready(function () {
-            // Initialize DataTable
-            var table = $('#example').DataTable({
-                paging: false,
-                searching: false,
-                dom: 't',
-                ordering: false // Disable default ordering
-            });
+            $('#generate-btn').on('click', function () {
+                const selectedModels = [
+                    $('#model1').val(),
+                    $('#model2').val(),
+                    $('#model3').val()
+                ].filter(Boolean);
 
-            // Enable column drag-and-drop
-            $("#sortableHeader").sortable({
-                axis: "x",
-                cursor: "move",
-                stop: function (event, ui) {
-                    var columnOrder = [];
+                const tableHead = $('#header-row');
+                const modelRow = $('#model-row');
+                const tableBody = $('#example tbody');
+                tableHead.empty();
+                modelRow.empty();
+                tableBody.empty();
 
-                    // Capture new column order
-                    $("#sortableHeader th").each(function () {
-                        columnOrder.push($(this).attr("data-index"));
+                // ヘッダー作成
+                tableHead.append('<th>項目</th>');
+                selectedModels.forEach(model => {
+                    const price = modelData[model]?.price || 'N/A';
+                    tableHead.append(`<th data-column="${model}">${price} 円</th>`);
+                });
+
+                modelRow.append('<th>Model</th>');
+                selectedModels.forEach(model => {
+                    modelRow.append(`<th data-column="${model}">${model}</th>`);
+                });
+
+                // Speed行
+                if ($('#filter-speed').prop('checked')) {
+                    const speedRow = $('<tr></tr>');
+                    speedRow.append('<td>Speed</td>');
+                    selectedModels.forEach(model => {
+                        speedRow.append(`<td>${modelData[model]?.speed || 'N/A'} km/h</td>`);
                     });
+                    tableBody.append(speedRow);
+                }
 
-                    // Rearrange DataTable internal data structure
-                    var newData = [];
-                    table.rows().data().each(function (row) {
-                        var rearrangedRow = columnOrder.map(function (index) {
-                            return row[index];
-                        });
-                        newData.push(rearrangedRow);
+                // Price行
+                if ($('#filter-price').prop('checked')) {
+                    const priceRow = $('<tr></tr>');
+                    priceRow.append('<td>Price</td>');
+                    selectedModels.forEach(model => {
+                        const price = modelData[model]?.price || 'N/A';
+                        priceRow.append(`<td>${price} 円</td>`);
                     });
-
-                    // Clear and redraw the table with reordered columns
-                    table.clear().rows.add(newData).draw();
-
-                    // Update header indices to reflect new order
-                    $("#sortableHeader th").each(function (newIndex) {
-                        $(this).attr("data-index", newIndex);
-                    });
-
-                    console.log("Columns successfully reordered!");
+                    tableBody.append(priceRow);
                 }
             });
 
-            // Enable row drag-and-drop
-            $("#example tbody").sortable({
+            // 行のドラッグ&ドロップ
+            $('#example tbody').sortable({
                 items: "tr",
                 cursor: "move",
-                stop: function (event, ui) {
-                    var reorderedData = [];
+                stop: function () {
+                    console.log('行が並び替えられました！');
+                }
+            }).disableSelection();
 
-                    // Get updated row order and extract data
-                    $("#example tbody tr").each(function () {
-                        var rowData = [];
-                        $(this).find("td").each(function () {
-                            rowData.push($(this).text());
-                        });
-                        reorderedData.push(rowData);
+            // 列のドラッグ&ドロップ
+            $('#header-row, #model-row').sortable({
+                axis: "x",
+                items: "th",
+                cursor: "move",
+                stop: function () {
+                    const columnOrder = $('#header-row th').map(function () {
+                        return $(this).attr('data-column');
+                    }).get();
+
+                    $('#example tbody tr').each(function () {
+                        const cells = $(this).children('td');
+                        const sortedCells = columnOrder.map(column => cells.filter(`[data-column="${column}"]`));
+                        $(this).empty().append(sortedCells);
                     });
-
-                    // Clear and reload the table with reordered rows
-                    table.clear().rows.add(reorderedData).draw();
-
-                    console.log("Rows successfully reordered!");
                 }
             }).disableSelection();
         });
