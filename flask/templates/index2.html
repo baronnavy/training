@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>Data Playground</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: 'Segoe UI', 'Helvetica Neue', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f9f9fc;
+      color: #333;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 40px;
+      background-color: #ffffff;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    header h1 {
+      font-size: 24px;
+      color: #444;
+    }
+    .hero {
+      text-align: center;
+      padding: 60px 20px 30px;
+    }
+    .hero h2 {
+      font-size: 32px;
+      margin-bottom: 10px;
+    }
+    .hero p {
+      font-size: 18px;
+      color: #666;
+    }
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      padding: 40px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .card-link {
+      text-decoration: none;
+      color: inherit;
+    }
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      padding: 20px;
+      text-align: center;
+      transition: transform 0.2s ease;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+    }
+    .card h3 {
+      font-size: 20px;
+      margin-bottom: 16px;
+    }
+
+    /* 画像ラッパーで比率を固定 */
+    .card-img-wrapper {
+      width: 100%;
+      aspect-ratio: 3 / 2;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+
+    .card-img-wrapper img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    .card p {
+      font-size: 14px;
+      color: #666;
+    }
+
+    /* 隠れボタンのスタイル */
+    #hidden-button {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 24px;
+      opacity: 0.1;
+      transition: opacity 0.3s ease;
+      z-index: 1000;
+    }
+
+    #hidden-button:hover {
+      opacity: 0.3;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>SpecLab</h1>
+  </header>
+
+  <section class="hero">
+    <h2>スペックデータを手軽にビジュアル化</h2>
+    <p>データソース：BLIデータ、技推実測データ</p>
+  </section>
+
+  <section class="card-grid">
+    <a href="table.html" class="card-link">
+      <div class="card" style="background-color:#e3f2fd;">
+        <h3>スペック表作成</h3>
+        <div class="card-img-wrapper">
+          <img src="static/sample.png" alt="表作成アイコン">
+        </div>
+        <p>表にまとめる<br>　</p>
+      </div>
+    </a>
+    <a href="bar-chart.html" class="card-link">
+      <div class="card" style="background-color:#fff3e0;">
+        <h3>棒グラフ作成</h3>
+        <div class="card-img-wrapper">
+          <img src="static/sample.png" alt="棒グラフ作成アイコン">
+        </div>
+        <p>ランキングを見る<br>　</p>
+      </div>
+    </a>
+    <a href="scatter.html" class="card-link">
+      <div class="card" style="background-color:#f3e5f5;">
+        <h3>散布図作成</h3>
+        <div class="card-img-wrapper">
+          <img src="static/sample.png" alt="散布図作成アイコン">
+        </div>
+        <p>２変数の関係性を見る<br>　</p>
+      </div>
+    </a>
+    <a href="multidimensional.html" class="card-link">
+      <div class="card" style="background-color:#e0f7fa;">
+        <h3>多次元グラフ作成</h3>
+        <div class="card-img-wrapper">
+          <img src="static/sample.png" alt="多次元グラフ作成アイコン">
+        </div>
+        <p>多変数の関係性を探る<br>(トライアル中)</p>
+      </div>
+    </a>
+  </section>
+
+  <!-- 隠れボタン -->
+  <button id="hidden-button" title="登録">📝</button>
+
+</body>
+</html>

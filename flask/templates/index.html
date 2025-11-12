@@ -5,6 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>検索画面</title>
     <link rel="stylesheet" href="/static/style.css">
+    <style>
+        /* アイコン風ボタンのスタイル */
+        #register-button {
+            display: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 24px;
+            opacity: 0.2; /* 背景に溶け込むように */
+            transition: opacity 0.3s ease;
+        }
+
+        #register-button:hover {
+            opacity: 0.8; /* ホバーで少し目立つ */
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -16,6 +32,7 @@
             <input type="text" id="keyword" name="keyword" placeholder="キーワードを入力してください">
             <button type="submit">検索</button>
         </form>
+
         <section id="results">
             {% if results %}
             <table>
@@ -24,14 +41,14 @@
                         <th>ファイル名</th>
                         <th>内容</th>
                         <th>リンク</th>
-                        <th>カテゴリ</th> <!-- カテゴリ列追加 -->
+                        <th>カテゴリ</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for result in results %}
                     <tr>
                         <td>{{ result[0] }}</td>
-                        <td>{{ result[1]|safe }}</td> <!-- HTMLの安全な表示 -->
+                        <td>{{ result[1]|safe }}</td>
                         <td><a href="{{ result[2] }}">リンク</a></td>
                         <td>{{ result[3] }}</td>
                     </tr>
@@ -42,7 +59,27 @@
             <p>検索結果はありませんでした。</p>
             {% endif %}
         </section>
-        <button onclick="window.location.href='/register'">登録画面へ</button>
+
+        <!-- 🔒 Shiftキー2回で表示される絵文字アイコンボタン -->
+        <button id="register-button" onclick="window.location.href='/register'">🗒️</button>
     </main>
+
+    <script>
+        let shiftCount = 0;
+        let timer;
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Shift') {
+                shiftCount++;
+                clearTimeout(timer);
+                timer = setTimeout(() => shiftCount = 0, 1000);
+
+                if (shiftCount === 2) {
+                    document.getElementById('register-button').style.display = 'inline-block';
+                    shiftCount = 0;
+                }
+            }
+        });
+    </script>
 </body>
 </html>

@@ -86,8 +86,8 @@ def index():
             highlighted_content = re.sub(f'({"|".join(map(re.escape, related_words))})', r'<mark>\1</mark>', result[1], flags=re.IGNORECASE)
             highlighted_results.append((result[0], Markup(highlighted_content), result[2], result[3]))
         
-        return render_template('index.html', results=highlighted_results, keyword=keyword)
-    return render_template('index.html', results=None)
+        return render_template('index2.html', results=highlighted_results, keyword=keyword)
+    return render_template('index2.html', results=None)
 
 # 登録画面
 @app.route('/register', methods=['GET', 'POST'])
